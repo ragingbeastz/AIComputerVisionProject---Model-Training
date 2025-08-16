@@ -5,11 +5,15 @@ import tensorflow as tf
 from tensorflow.keras.applications import EfficientNetB3
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.models import Model
+from tensorflow.keras.applications import ResNet50
+
 
 print("Num GPUs Available:", len(tf.config.list_physical_devices('GPU')))
 
 #Read Dataset
 df = pd.read_csv("C:\\Users\\Dimithri\\Documents\\Model Training Computer Vision\\car_labels.csv")
+df["label"] = df["label"].apply(lambda l: "_".join(l.split("_")[:2]))
+
 
 # Build image paths
 datasetDirectory = "C:\\Users\\Dimithri\\Documents\\AlteredDataset"
@@ -58,10 +62,10 @@ val_ds = build_dataset(val_df, shuffle=False)
 test_ds = build_dataset(test_df, shuffle=False)
 
 # Create the model
-base_model = EfficientNetB3(
+base_model = ResNet50(
     weights='imagenet',
     include_top=False,
-    input_shape=(300, 300, 3)  # match your current setup
+    input_shape=(300, 300, 3) 
 )
 
 base_model.trainable = False
