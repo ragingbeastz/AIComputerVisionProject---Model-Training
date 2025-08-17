@@ -1,18 +1,21 @@
 import pandas as pd
+import json
 import os
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow.keras.applications import EfficientNetB3
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.applications import InceptionV3
 
 
 print("Num GPUs Available:", len(tf.config.list_physical_devices('GPU')))
 
 #Read Dataset
 df = pd.read_csv("C:\\Users\\Dimithri\\Documents\\Model Training Computer Vision\\car_labels.csv")
-df["label"] = df["label"].apply(lambda l: "_".join(l.split("_")[:2]))
+df["label"] = df["label"].apply(lambda l: l.split("_")[0])
 
 
 # Build image paths
@@ -20,9 +23,8 @@ datasetDirectory = "C:\\Users\\Dimithri\\Documents\\AlteredDataset"
 df["full_path"] = df["path"].apply(lambda p: os.path.join(datasetDirectory, p.replace("\\", "/")))
 
 
-# Split into train/val/test sets
-train_df, temp_df = train_test_split(df, test_size=0.3, random_state=42) 
-val_df, test_df = train_test_split(temp_df, test_size=0.5, random_state=42)
+# Split into train/test sets
+train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
 
 # Create label index mapping
 labelNames = sorted(df["label"].unique())
@@ -30,11 +32,10 @@ labelIndexes = {name: i for i, name in enumerate(labelNames)}
 
 # Apply label indices
 train_df["label_idx"] = train_df["label"].map(labelIndexes)
-val_df["label_idx"] = val_df["label"].map(labelIndexes)
 test_df["label_idx"] = test_df["label"].map(labelIndexes)
 
 
-img_size = (300, 300)
+img_size = (299, 299)
 batch_size = 32
 
 # Function to create TensorFlow dataset from DataFrame
@@ -58,30 +59,35 @@ def build_dataset(df, shuffle=True):
     return ds
 
 train_ds = build_dataset(train_df)
-val_ds = build_dataset(val_df, shuffle=False)
 test_ds = build_dataset(test_df, shuffle=False)
 
-# Create the model
-base_model = ResNet50(
+base_model = InceptionV3(
     weights='imagenet',
     include_top=False,
-    input_shape=(300, 300, 3) 
+    input_shape=(299, 299, 3)  # InceptionV3 uses 299x299 input
 )
-
 base_model.trainable = False
 
-x = GlobalAveragePooling2D()(base_model.output)
-output = Dense(len(labelNames), activation='softmax')(x)
+x = tf.keras.layers.GlobalAveragePooling2D()(base_model.output)
+output = tf.keras.layers.Dense(len(labelNames), activation='softmax')(x)
 
-model = Model(inputs=base_model.input, outputs=output)
-model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model = tf.keras.Model(inputs=base_model.input, outputs=output)
+
+model.compile(
+    optimizer=Adam(learning_rate=1e-4),
+    loss='sparse_categorical_crossentropy',
+    metrics=['accuracy']
+)
 
 print("Training model...")
-model.fit(train_ds, validation_data=val_ds, epochs=10)
+model.fit(train_ds, epochs=50)
 
 print("Evaluating model...")
 model.evaluate(test_ds)
 
 # Save the model
-model.save("car_classifier_model.keras")
+model.save("model_car_make.keras")
+
+with open("labels_car_make.json", "w") as f:
+    json.dump(labelIndexes, f)
 
