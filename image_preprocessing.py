@@ -17,5 +17,18 @@ for m, cls in zip(res.masks.xy, res.boxes.cls.cpu().numpy()):
 white_bg = 255 * np.ones_like(img, dtype=np.uint8)
 final = np.where(mask[..., None] == 255, img, white_bg)
 
-cv2.imwrite("car_whitebg.jpg", final)
+h, w = final.shape[:2]
+
+scale = 299 / max(h, w)
+new_w, new_h = int(w * scale), int(h * scale)
+
+resized = cv2.resize(final, (new_w, new_h))
+
+canvas = 255 * np.ones((299, 299, 3), dtype=np.uint8)
+
+x_off = (299 - new_w) // 2
+y_off = (299 - new_h) // 2
+canvas[y_off:y_off+new_h, x_off:x_off+new_w] = resized
+
+cv2.imwrite("car_whitebg.jpg", canvas)
 print("Saved car_whitebg.jpg")
