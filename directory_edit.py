@@ -5,6 +5,9 @@ import shutil
 originalDir = "C:\\Users\\Dimithri\\Downloads\\resized_DVM_v2\\resized_DVM"
 savedDir = "C:\\Users\\Dimithri\\Documents\\AlteredDataset"
 
+total = sum(len(files) + len(dirs) for _, dirs, files in os.walk(originalDir))
+print(total)
+
 def alterDirectoryStructure():
 
     if not os.path.exists(savedDir):

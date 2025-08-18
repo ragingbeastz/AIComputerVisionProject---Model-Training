@@ -9,6 +9,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.applications import InceptionV3
+import numpy
 
 
 print("Num GPUs Available:", len(tf.config.list_physical_devices('GPU')))
@@ -74,13 +75,13 @@ output = tf.keras.layers.Dense(len(labelNames), activation='softmax')(x)
 model = tf.keras.Model(inputs=base_model.input, outputs=output)
 
 model.compile(
-    optimizer=Adam(learning_rate=1e-4),
+    optimizer='adam',
     loss='sparse_categorical_crossentropy',
     metrics=['accuracy']
 )
 
 print("Training model...")
-model.fit(train_ds, epochs=50)
+model.fit(train_ds, epochs=25)
 
 print("Evaluating model...")
 model.evaluate(test_ds)
