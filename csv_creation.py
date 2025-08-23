@@ -1,12 +1,12 @@
 import os
 import csv
 
-datasetDir = "C:\\Users\\Dimithri\\Documents\\AlteredDataset"
-output_csv = "car_labels.csv"
+datasetDir = "C:\\Users\\Dimithri\\Documents\\MiniDatasetV4"
+output_csv = "C:\\Users\\Dimithri\\Documents\\Model Training Computer Vision\\car_labelsV4.csv"
 
 
 progress = 0
-imageCount = 1451890
+imageCount = 19246
 # for make in os.listdir(datasetDir):
 #     for model in os.listdir(os.path.join(datasetDir, make)):
 #         for year in os.listdir(os.path.join(datasetDir, make, model)):
@@ -22,7 +22,7 @@ imageCount = 1451890
 
 
 rows = []
-output = "car_labels.csv"
+output = "car_labelsV2.csv"
 for make in os.listdir(datasetDir):
     make_path = os.path.join(datasetDir, make)
 
